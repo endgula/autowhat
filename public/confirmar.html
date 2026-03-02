@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Pago | WhaAut</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard">
+        <header>
+            <div>
+                <h1>Confirmar Pago</h1>
+                <p style="color: var(--text-muted)">Validación de pago manual (Efectivo)</p>
+            </div>
+            <a href="/" style="text-decoration: none;"><button class="secondary">Volver al Dashboard</button></a>
+        </header>
+
+        <div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+            <div id="paymentDetails" style="margin-bottom: 2rem;">
+                <p style="color: var(--text-muted)">Cargando detalles del pago...</p>
+            </div>
+
+            <p style="margin-bottom: 2rem; color: #94a3b8;">
+                ¿Confirmas que has recibido el dinero de este cliente?
+                Se enviará un mensaje de agradecimiento automáticamente.
+            </p>
+
+            <button id="confirmBtn" style="width: 100%; padding: 1rem; background: var(--success);">
+                Sí, Confirmar recepción de dinero 💸
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id');
+
+        async function loadDetails() {
+            if (!paymentId) return window.location.href = "/";
+
+            // In a real app we'd fetch details. For now, we fetch summary and filter.
+            const res = await fetch('/api/dashboard/summary');
+            const data = await res.json();
+            const payment = data.payments.find(p => p.id == paymentId);
+
+            if (payment) {
+                document.getElementById('paymentDetails').innerHTML = `
+                    <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">S/ ${payment.amount.toFixed(2)}</h2>
+                    <p style="font-size: 1.25rem;">${payment.name}</p>
+                    <p style="color: var(--text-muted)">${payment.whatsapp_number}</p>
+                `;
+            } else {
+                alert("Pago no encontrado");
+                window.location.href = "/";
+            }
+        }
+
+        document.getElementById('confirmBtn').onclick = async () => {
+            const res = await fetch(`/api/payments/${paymentId}/manual-pay`, { method: 'POST' });
+            if (res.ok) {
+                alert("Pago confirmado con éxito");
+                window.location.href = "/";
+            }
+        };
+
+        loadDetails();
+    </script>
+</body>
+
+</html>

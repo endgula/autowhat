@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Cliente | WhaAut</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard">
+        <header>
+            <div>
+                <h1>Registrar Cliente</h1>
+                <p style="color: var(--text-muted)">Añade un nuevo cliente al sistema de cobro</p>
+            </div>
+            <a href="/" style="text-decoration: none;"><button class="secondary">Ver Dashboard</button></a>
+        </header>
+
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <form id="regForm" class="registration-form">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="regName" required placeholder="Ej: Juan Perez">
+                </div>
+                <div class="form-group">
+                    <label>Número de WhatsApp (Con código de país, ej: 51...)</label>
+                    <input type="text" id="regPhone" required placeholder="Ej: 51987654321">
+                </div>
+                <div class="form-group">
+                    <label>Frecuencia de Pago</label>
+                    <select id="regFreq">
+                        <option value="diario">Diario</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="quincenal">Quincenal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monto del Cobro (S/)</label>
+                    <input type="number" id="regAmount" required placeholder="30.00" step="0.01">
+                </div>
+                <div style="margin-top: 2rem;">
+                    <button type="submit" style="width: 100%; padding: 1rem;">Guardar y Programar Cobro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('regName').value,
+                whatsappNumber: document.getElementById('regPhone').value,
+                frequency: document.getElementById('regFreq').value,
+                initialAmount: parseFloat(document.getElementById('regAmount').value)
+            };
+
+            const res = await fetch('/api/clients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Cliente registrado con éxito");
+                window.location.href = "/";
+            } else {
+                alert("Error: " + await res.text());
+            }
+        };
+    </script>
+</body>
+
+</html>

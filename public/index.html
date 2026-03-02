@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhaAut Admin | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard">
+        <header>
+            <div>
+                <h1>WhaAut Admin</h1>
+                <p style="color: var(--text-muted)">Sistema de Cobranza Automatizada</p>
+            </div>
+            <a href="/registrar.html" style="text-decoration: none;"><button id="addClientBtn">+ Registrar
+                    Cliente</button></a>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">Total Pendiente</div>
+                <div class="value" id="totalPending">S/ 0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Cobros Hoy</div>
+                <div class="value" id="todayCollections">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Tasa de Respuesta</div>
+                <div class="value">94%</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>Próximos Cobros y Pendientes</h2>
+                <div class="payment-list" id="paymentList">
+                    <p style="color: var(--text-muted)">Cargando pagos...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Actividad del Bot</h2>
+                <div class="log-container" id="activityLog">
+                    <p style="color: var(--text-muted)">Cargando actividad...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/dashboard/summary');
+                const data = await response.json();
+
+                document.getElementById('totalPending').innerText = `S/ ${data.totalPending.toFixed(2)}`;
+                document.getElementById('todayCollections').innerText = data.todayCollections;
+
+                const paymentList = document.getElementById('paymentList');
+                paymentList.innerHTML = '';
+                data.payments.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'payment-item';
+                    item.innerHTML = `
+                        <div class="client-info">
+                            <div class="name">${p.name}</div>
+                            <div class="phone">${p.whatsapp_number} | ${p.payment_frequency}</div>
+                        </div>
+                        <div class="payment-status">
+                            <div style="font-weight: 700">S/ ${p.amount.toFixed(2)}</div>
+                            <span class="status-badge status-${p.status}">${p.status}</span>
+                            ${p.status === 'pendiente' ? `<a href="/confirmar.html?id=${p.id}"><button>Efectivo 💸</button></a>` : ''}
+                        </div>
+                    `;
+                    paymentList.appendChild(item);
+                });
+
+                const activityLog = document.getElementById('activityLog');
+                activityLog.innerHTML = '';
+                data.logs.forEach(log => {
+                    const item = document.createElement('div');
+                    item.className = 'log-item';
+                    item.innerHTML = `
+                        <div class="time">${new Date(log.created_at).toLocaleTimeString()}</div>
+                        <div><strong>${log.name || 'Sistema'}:</strong> ${log.content}</div>
+                    `;
+                    activityLog.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error("Error loading dashboard", err);
+            }
+        }
+
+        loadDashboard();
+        setInterval(loadDashboard, 10000); 
+    </script>
+</body>
+
+</html>
