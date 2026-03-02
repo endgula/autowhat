@@ -5,6 +5,7 @@ const { open } = require('sqlite');
 const sqlite3 = require('sqlite3');
 const moment = require('moment');
 const path = require('path');
+const fs = require('fs');
 
 const { EvolutionService, SchedulerService } = require('./src/services/scheduler');
 const OCRService = require('./src/services/ocr');
@@ -17,6 +18,10 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 const dbPath = path.resolve(__dirname, process.env.DATABASE_PATH || './database/database.sqlite');
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
 
 let db;
 
